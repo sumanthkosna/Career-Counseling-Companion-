@@ -1,0 +1,604 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Career Counseling Companion — Architecture</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #ffffff;
+    color: #1f2328;
+    padding: 32px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  .page-header h1 { font-size: 1.9rem; color: #0f3460; font-weight: 700; }
+  .page-header p  { color: #57606a; margin-top: 6px; font-size: 0.95rem; }
+  .ibm-tag {
+    display: inline-block;
+    background: #0f3460;
+    color: #fff;
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #57606a;
+    margin: 28px 0 10px;
+  }
+
+  /* ── Layers ── */
+  .layer {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 6px;
+  }
+  .layer-ui        { background: #eff6ff; border: 1.5px solid #bfdbfe; }
+  .layer-orch      { background: #f0fdf4; border: 1.5px solid #86efac; }
+  .layer-agents    { background: #fefce8; border: 1.5px solid #fde047; }
+  .layer-ai        { background: #faf5ff; border: 1.5px solid #d8b4fe; }
+  .layer-rag       { background: #fff1f2; border: 1.5px solid #fecdd3; }
+  .layer-config    { background: #f0f9ff; border: 1.5px solid #7dd3fc; }
+
+  .layer-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .layer-title .badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #1f2328;
+    color: #fff;
+    letter-spacing: 0.4px;
+  }
+  .layer-ui     .badge { background: #1d4ed8; }
+  .layer-orch   .badge { background: #15803d; }
+  .layer-agents .badge { background: #a16207; }
+  .layer-ai     .badge { background: #7c3aed; }
+  .layer-rag    .badge { background: #be123c; }
+  .layer-config .badge { background: #0369a1; }
+
+  /* ── Arrow between layers ── */
+  .arrow {
+    text-align: center;
+    font-size: 1.3rem;
+    color: #9ca3af;
+    margin: 2px 0;
+    line-height: 1;
+  }
+
+  /* ── Grid layouts ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+
+  /* ── Cards inside layers ── */
+  .card {
+    background: #ffffff;
+    border-radius: 7px;
+    padding: 9px 11px;
+    border: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+  }
+  .card strong { display: block; font-size: 0.82rem; color: #1f2328; }
+  .card span   { font-size: 0.78rem; color: #57606a; }
+  .card .file  { font-size: 0.72rem; color: #3b82d4; font-family: monospace; margin-top: 3px; }
+
+  /* ── Agent pipeline ── */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .agent-row {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    padding: 7px 11px;
+    gap: 10px;
+    font-size: 0.84rem;
+  }
+  .agent-num {
+    background: #0f3460;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .agent-name  { flex: 1; font-weight: 600; color: #1f2328; }
+  .agent-file  { font-family: monospace; font-size: 0.72rem; color: #3b82d4; }
+  .agent-role  { font-size: 0.77rem; color: #57606a; flex: 2; }
+  .agent-rag   {
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: #fff1f2;
+    color: #be123c;
+    padding: 2px 6px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .agent-orch  {
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: #f0fdf4;
+    color: #15803d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ── Workflow arrows with labels ── */
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: #9ca3af;
+    font-size: 0.75rem;
+  }
+  .flow-arrow::before { content: "↓"; font-size: 1rem; color: #6b7280; }
+  .flow-label { color: #57606a; font-style: italic; }
+
+  /* ── KB files grid ── */
+  .kb-file {
+    background: #ffffff;
+    border: 1px solid #fecdd3;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
+  .kb-file .name { font-family: monospace; font-size: 0.75rem; color: #be123c; font-weight: 600; }
+  .kb-file .desc { font-size: 0.75rem; color: #57606a; margin-top: 2px; }
+
+  /* ── Data flow diagram ── */
+  .data-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .df-box {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    text-align: center;
+    font-weight: 600;
+    color: #1f2328;
+    min-width: 80px;
+    flex: 1;
+  }
+  .df-arrow { color: #9ca3af; font-size: 1.1rem; flex-shrink: 0; }
+
+  /* ── Env vars ── */
+  .env-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .env-var {
+    background: #fff;
+    border: 1px solid #7dd3fc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-family: monospace;
+    font-size: 0.78rem;
+    color: #0369a1;
+    font-weight: 600;
+  }
+
+  /* ── Output section ── */
+  .output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .output-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    padding: 8px 11px;
+    font-size: 0.82rem;
+  }
+  .output-item strong { color: #0f3460; font-size: 0.82rem; }
+  .output-item p { color: #57606a; font-size: 0.77rem; margin-top: 2px; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: #f7f8fa;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #57606a; }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+</style>
+</head>
+<body>
+
+
+<div class="page-header">
+  <h1>🎓 Agentic Career Counseling Companion</h1>
+  <p>System Architecture — Problem Statement No. 15</p>
+  <span class="ibm-tag">IBM watsonx.ai · IBM Granite · Multi-Agent Pipeline · RAG</span>
+</div>
+
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#1d4ed8"></div> UI Layer</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#15803d"></div> Orchestration Layer</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a16207"></div> Agent Pipeline</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div> AI / Model Layer</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#be123c"></div> RAG Knowledge Base</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0369a1"></div> Config / Security</div>
+</div>
+
+
+<div class="section-label">Layer 1 — Presentation</div>
+<div class="layer layer-ui">
+  <div class="layer-title">🖥️ Streamlit Web UI <span class="badge">UI</span></div>
+  <div class="grid-2">
+    <div class="card">
+      <strong>Student Profile Form</strong>
+      <span>Degree · CGPA · Subjects · Skills · Interests · Hobbies · Projects · Certifications</span>
+      <div class="file">app.py — StudentProfileForm</div>
+    </div>
+    <div class="card">
+      <strong>Career Counseling Report</strong>
+      <span>Top careers · Skill gaps · Roadmap · Market insights · Action plan · Download JSON</span>
+      <div class="file">app.py — ReportRenderer</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+
+<div class="layer layer-config">
+  <div class="layer-title">🔒 Configuration &amp; Security Layer <span class="badge">CONFIG</span></div>
+  <div class="env-grid">
+    <div class="env-var">WATSONX_API_KEY</div>
+    <div class="env-var">WATSONX_PROJECT_ID</div>
+    <div class="env-var">WATSONX_URL</div>
+    <div class="env-var">MODEL_ID</div>
+  </div>
+  <div style="margin-top:7px;font-size:0.78rem;color:#57606a">
+    All credentials loaded from <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px">.env</code> file via <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px">python-dotenv</code> · Never hard-coded · config.py · validate_credentials()
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+
+<div class="layer layer-orch">
+  <div class="layer-title">🎛️ Career Counselor / Orchestrator Agent <span class="badge">ORCHESTRATOR</span></div>
+  <div class="grid-2" style="margin-top:6px">
+    <div class="card">
+      <strong>AgentPipeline</strong>
+      <span>Sequential agent execution · Context propagation between agents · Progress callbacks</span>
+      <div class="file">career_agent.py — AgentPipeline.run()</div>
+    </div>
+    <div class="card">
+      <strong>IBM watsonx Orchestrate Mapping</strong>
+      <span>Each agent = one Orchestrate Skill · Pipeline = Orchestrate Flow · Cleanly separated for migration</span>
+      <div class="file">career_agent.py — run_career_counseling()</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+
+<div class="layer layer-agents">
+  <div class="layer-title">🤖 Multi-Agent Pipeline (8 Specialist Agents) <span class="badge">AGENTS</span></div>
+
+  <div class="pipeline">
+
+    <div class="agent-row">
+      <div class="agent-num">1</div>
+      <div class="agent-name">Academic Performance Agent</div>
+      <div class="agent-role">Analyses degree, CGPA, subjects, strong/weak areas → academic profile JSON</div>
+      <div class="agent-file">academic_agent.py</div>
+    </div>
+
+    <div class="flow-arrow"><span class="flow-label">academic_analysis →</span></div>
+
+    <div class="agent-row">
+      <div class="agent-num">2</div>
+      <div class="agent-name">Interest &amp; Preference Agent</div>
+      <div class="agent-role">Maps interests, hobbies, work style → dominant domains, career alignment</div>
+      <div class="agent-file">interest_agent.py</div>
+    </div>
+
+    <div class="flow-arrow"><span class="flow-label">interest_analysis →</span></div>
+
+    <div class="agent-row">
+      <div class="agent-num">3</div>
+      <div class="agent-name">Skill Assessment Agent</div>
+      <div class="agent-role">Evaluates tech/soft skills, projects, internships, certs → skill inventory</div>
+      <div class="agent-file">skill_agent.py</div>
+    </div>
+
+    <div class="flow-arrow"><span class="flow-label">skill_analysis →</span></div>
+
+    <div class="agent-row">
+      <div class="agent-num">4</div>
+      <div class="agent-name">Career Matching Agent</div>
+      <div class="agent-role">RAG: compares profile to KB career paths → Top 3 careers with match score &amp; reasons</div>
+      <div class="agent-file">career_matching_agent.py</div>
+      <div class="agent-rag">RAG</div>
+    </div>
+
+    <div class="flow-arrow"><span class="flow-label">career_matches →</span></div>
+
+    <div class="agent-row">
+      <div class="agent-num">5</div>
+      <div class="agent-name">Skill Gap Analysis Agent</div>
+      <div class="agent-role">RAG: current skills vs career requirements → prioritised gaps (High/Medium/Low)</div>
+      <div class="agent-file">skill_gap_agent.py</div>
+      <div class="agent-rag">RAG</div>
+    </div>
+
+    <div class="flow-arrow"><span class="flow-label">skill_gap_analysis →</span></div>
+
+    <div class="agent-row">
+      <div class="agent-num">6</div>
+      <div class="agent-name">Personalized Learning Roadmap Agent</div>
+      <div class="agent-role">RAG: gaps + resources + certs → 3-phase roadmap, projects, certifications, actions</div>
+      <div class="agent-file">roadmap_agent.py</div>
+      <div class="agent-rag">RAG</div>
+    </div>
+
+    <div class="flow-arrow"><span class="flow-label">roadmap →</span></div>
+
+    <div class="agent-row">
+      <div class="agent-num">7</div>
+      <div class="agent-name">Labor Market Trend Agent</div>
+      <div class="agent-role">RAG: market KB → demand trends, YoY growth, hiring sectors, emerging skills</div>
+      <div class="agent-file">market_agent.py</div>
+      <div class="agent-rag">RAG</div>
+    </div>
+
+    <div class="flow-arrow"><span class="flow-label">market_analysis →</span></div>
+
+    <div class="agent-row" style="background:#fff7ed;border-color:#fed7aa">
+      <div class="agent-num" style="background:#c2410c">8</div>
+      <div class="agent-name" style="color:#c2410c">Final Career Advisor Agent</div>
+      <div class="agent-role">Synthesises all outputs → complete personalised report, action plan, interview prep</div>
+      <div class="agent-file">career_agent.py</div>
+      <div class="agent-orch">FINAL</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="arrow">↓↑ (RAG lookup per agent)</div>
+
+
+<div class="layer layer-rag">
+  <div class="layer-title">📚 RAG Knowledge Base <span class="badge">KB</span></div>
+  <div style="font-size:0.78rem;color:#57606a;margin-bottom:8px">
+    Loaded at inference time by <code style="background:#ffe4e6;padding:1px 5px;border-radius:3px">knowledge_base_loader.py</code> · Injected into Granite prompts as structured context
+  </div>
+  <div class="grid-4">
+    <div class="kb-file">
+      <div class="name">career_paths.json</div>
+      <div class="desc">10 career paths · domains · growth · salary bands · remote flags</div>
+    </div>
+    <div class="kb-file">
+      <div class="name">career_requirements.json</div>
+      <div class="desc">Tech/soft skills · min CGPA · preferred subjects · per-career requirements</div>
+    </div>
+    <div class="kb-file">
+      <div class="name">skills_database.json</div>
+      <div class="desc">Skills taxonomy by category · skill→career mapping</div>
+    </div>
+    <div class="kb-file">
+      <div class="name">learning_resources.json</div>
+      <div class="desc">Curated courses by skill · provider · level · URL · duration</div>
+    </div>
+    <div class="kb-file">
+      <div class="name">certifications.json</div>
+      <div class="desc">Industry certifications per career · provider · level</div>
+    </div>
+    <div class="kb-file">
+      <div class="name">interview_topics.json</div>
+      <div class="desc">Core topics · question types · prep resources per career</div>
+    </div>
+    <div class="kb-file">
+      <div class="name">market_trends.json</div>
+      <div class="desc">2025 demand trends · YoY growth % · hiring sectors · emerging skills</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">↓↑</div>
+
+
+<div class="layer layer-ai">
+  <div class="layer-title">🧠 AI Model Layer <span class="badge">IBM GRANITE</span></div>
+  <div class="grid-3">
+    <div class="card">
+      <strong>IBM Granite 3.3 8B Instruct</strong>
+      <span>Default model · Fast inference · JSON-structured outputs</span>
+      <div class="file">ibm/granite-3-3-8b-instruct</div>
+    </div>
+    <div class="card">
+      <strong>IBM watsonx.ai SDK</strong>
+      <span>ModelInference · Credentials · GenTextParamsMetaNames · Greedy decoding</span>
+      <div class="file">ibm-watsonx-ai&gt;=1.1.2</div>
+    </div>
+    <div class="card">
+      <strong>Prompt Engineering</strong>
+      <span>Granite chat format &lt;|system|&gt; / &lt;|user|&gt; / &lt;|assistant|&gt; · JSON-only output · KB context injection</span>
+      <div class="file">All *_agent.py files</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="section-label">End-to-End Data Flow</div>
+<div class="data-flow">
+  <div class="df-box" style="border-color:#bfdbfe;color:#1d4ed8">📋 Student Input</div>
+  <div class="df-arrow">→</div>
+  <div class="df-box" style="border-color:#86efac;color:#15803d">🎛️ Orchestrator</div>
+  <div class="df-arrow">→</div>
+  <div class="df-box" style="border-color:#fde047;color:#a16207">🤖 Agent 1–3</div>
+  <div class="df-arrow">→</div>
+  <div class="df-box" style="border-color:#fecdd3;color:#be123c">📚 RAG Lookup</div>
+  <div class="df-arrow">→</div>
+  <div class="df-box" style="border-color:#d8b4fe;color:#7c3aed">🧠 Granite</div>
+  <div class="df-arrow">→</div>
+  <div class="df-box" style="border-color:#fde047;color:#a16207">🤖 Agent 4–8</div>
+  <div class="df-arrow">→</div>
+  <div class="df-box" style="border-color:#bfdbfe;color:#1d4ed8">📊 Report</div>
+</div>
+
+
+<div class="section-label">Report Output Sections</div>
+<div class="output-grid">
+  <div class="output-item">
+    <strong>🎯 Top 3 Career Recommendations</strong>
+    <p>Match score (0–100), match level (Excellent/Strong/Good/Moderate), specific matching reasons</p>
+  </div>
+  <div class="output-item">
+    <strong>💪 Student Strengths</strong>
+    <p>5–7 genuine strengths identified from academic + skill analysis</p>
+  </div>
+  <div class="output-item">
+    <strong>🔍 Prioritised Skill Gaps</strong>
+    <p>High / Medium / Low priority gaps with reasoning, per-career breakdown</p>
+  </div>
+  <div class="output-item">
+    <strong>🗺️ Phased Learning Roadmap</strong>
+    <p>3 time-boxed phases — focus areas, resources, milestones, total duration</p>
+  </div>
+  <div class="output-item">
+    <strong>🧪 Recommended Projects</strong>
+    <p>Hands-on projects with skills practiced to build the portfolio</p>
+  </div>
+  <div class="output-item">
+    <strong>🏅 Certifications to Pursue</strong>
+    <p>Provider, level, and timing recommendations from KB</p>
+  </div>
+  <div class="output-item">
+    <strong>🎤 Interview Preparation</strong>
+    <p>Core topics, preparation resources, tailored tips for primary career</p>
+  </div>
+  <div class="output-item">
+    <strong>📈 Labor Market Insights</strong>
+    <p>Demand trend, YoY growth %, hiring sectors, emerging skills, remote opportunity</p>
+  </div>
+  <div class="output-item">
+    <strong>⚡ Immediate Action Plan</strong>
+    <p>30-day and 90-day concrete action steps</p>
+  </div>
+  <div class="output-item">
+    <strong>💾 Downloadable JSON Report</strong>
+    <p>Complete structured report including all agent outputs and pipeline metadata</p>
+  </div>
+</div>
+
+
+<div class="section-label">Key Design Principles</div>
+<div class="grid-3">
+  <div class="card">
+    <strong>🔒 Zero Hard-Coded Secrets</strong>
+    <span>All IBM credentials via environment variables · .env file · validate_credentials() guard</span>
+  </div>
+  <div class="card">
+    <strong>🛡️ Graceful Fallbacks</strong>
+    <span>Every agent has JSON parse fallback · Pipeline never halts on malformed model output</span>
+  </div>
+  <div class="card">
+    <strong>🔄 Orchestrate-Ready</strong>
+    <span>Each agent = independent callable · Maps directly to IBM watsonx Orchestrate skill/flow</span>
+  </div>
+  <div class="card">
+    <strong>📖 RAG-Grounded</strong>
+    <span>No hallucinated careers · All recommendations backed by KB data injected into prompts</span>
+  </div>
+  <div class="card">
+    <strong>🧩 Modular</strong>
+    <span>11 Python modules · Each agent independently testable · KB extends by editing JSON files</span>
+  </div>
+  <div class="card">
+    <strong>⚖️ Honest AI</strong>
+    <span>No invented student data · Disclaimer on every report · No salary/employment guarantees</span>
+  </div>
+</div>
+
+
+<div class="section-label">Technology Stack</div>
+<div class="grid-4">
+  <div class="card" style="text-align:center">
+    <strong>IBM watsonx.ai</strong>
+    <span>Foundation model inference API</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <strong>IBM Granite</strong>
+    <span>granite-3-3-8b-instruct (default)</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <strong>Streamlit</strong>
+    <span>Web UI framework</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <strong>Python 3.10+</strong>
+    <span>ibm-watsonx-ai · python-dotenv · pandas · pydantic</span>
+  </div>
+</div>
+
+<div class="footer">
+  Agentic Career Counseling Companion · Problem Statement No. 15 · Powered by IBM watsonx.ai &amp; IBM Granite<br />
+  Made with IBM Bob
+</div>
+
+</body>
+</html>
